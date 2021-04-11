@@ -1,8 +1,29 @@
-exports.handler = async function(event: any) {
-  console.log('request', JSON.stringify(event, undefined, 2));
-  return {
-    statusCode: 200,
-    headers: { 'Content-Type': 'text/plain' },
-    body: `Hello, Apollo!! ${event.path}\n`
-  };
+const { ApolloServer, gql } = require('apollo-server-lambda');
+import { Test } from './lib/test'
+
+const typeDefs = gql`
+    type Query {
+        hello: String
+    }
+`;
+
+const resolvers = {
+    Query: {
+        hello: async () => {
+          console.log('log test');
+          console.error('error log test');
+          const test = new Test('class&function call');
+          console.log(await test.getMessage());
+          return 'Hello world! Apolo!!!'
+        },
+    },
 };
+
+const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+    playground: true,
+    introspection: true,
+});
+
+exports.handler = server.createHandler();
